@@ -35,6 +35,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
+    System.out.println("Da swerve is da wervd");
   }
 
   @Override
@@ -43,6 +44,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    System.out.println("Hello World");
   }
 
   @Override
