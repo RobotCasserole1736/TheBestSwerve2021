@@ -8,6 +8,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.lib.Calibration.CalWrangler;
+import frc.lib.DataServer.CasseroleDataServer;
+import frc.lib.DataServer.Annotations.Signal;
+import frc.lib.WebServer.CasseroleWebServer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -17,12 +21,29 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * project.
  */
 public class Robot extends TimedRobot {
-  /**
-   * This function is run when the robot is first started up and should be used
-   * for any initialization code.
-   */
+
+  // Website utilities
+  CasseroleWebServer webserver;
+  CalWrangler wrangler;
+  CasseroleDataServer dataServer;
+  LoopTiming loopTiming;
+
+  @Signal(units = "count")
+  int loopCounter = 0;
+
   @Override
   public void robotInit() {
+    /* Init website utilties */
+    webserver = new CasseroleWebServer();
+    wrangler = new CalWrangler();
+    dataServer = CasseroleDataServer.getInstance();
+    loopTiming = LoopTiming.getInstance();
+
+
+    dataServer.registerSignals(this);
+    dataServer.startServer();
+    webserver.startServer();
+
   }
 
   @Override
@@ -35,7 +56,13 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
+    loopTiming.markLoopStart();
+    loopCounter--;
     System.out.println("Da swerve is da wervd");
+
+    dataServer.sampleAllSignals();
+    loopTiming.markLoopEnd();
+
   }
 
   @Override
@@ -44,7 +71,13 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    loopTiming.markLoopStart();
+    loopCounter++;
     System.out.println("Hello World");
+
+    dataServer.sampleAllSignals();
+    loopTiming.markLoopEnd();
+
   }
 
   @Override
@@ -53,6 +86,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
+    loopTiming.markLoopStart();
+
+    dataServer.sampleAllSignals();
+    loopTiming.markLoopEnd();
   }
 
   @Override

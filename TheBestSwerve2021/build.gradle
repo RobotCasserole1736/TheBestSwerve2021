@@ -59,6 +59,22 @@ dependencies {
     simulation wpi.deps.sim.gui(wpi.platforms.desktop, false)
     simulation wpi.deps.sim.driverstation(wpi.platforms.desktop, false)
 
+
+    //Casserole WebServer Deps
+    compile 'com.googlecode.json-simple:json-simple:1.1.1'
+    compile group: 'org.eclipse.jetty', name: 'jetty-http', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty', name: 'jetty-util', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty', name: 'jetty-security', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-client', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-servlet', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-api', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty.websocket', name: 'websocket-common', version: '9.3.9.v20160517'
+    compile group: 'org.eclipse.jetty', name: 'jetty-io', version: '9.3.9.v20160517'
+    compile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.1.0'
+
     // Websocket extensions require additional configuration.
     // simulation wpi.deps.sim.ws_server(wpi.platforms.desktop, false)
     // simulation wpi.deps.sim.ws_client(wpi.platforms.desktop, false)
