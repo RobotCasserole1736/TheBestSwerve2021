@@ -12,6 +12,7 @@ import frc.lib.Calibration.CalWrangler;
 import frc.lib.DataServer.CasseroleDataServer;
 import frc.lib.DataServer.Annotations.Signal;
 import frc.lib.WebServer.CasseroleWebServer;
+import frc.sim.RobotModel;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -28,8 +29,17 @@ public class Robot extends TimedRobot {
   CasseroleDataServer dataServer;
   LoopTiming loopTiming;
 
+  // keep track of the robot's actual, estimated, and desired position on the field
+  DtPoseView dtPoseView;
+  DtModuleStatesView dtModStatesView;
+
   @Signal(units = "count")
   int loopCounter = 0;
+
+
+  //////////////////////////////////////////////////////////////////////
+  // Robot Initilization
+  //////////////////////////////////////////////////////////////////////
 
   @Override
   public void robotInit() {
@@ -38,7 +48,13 @@ public class Robot extends TimedRobot {
     wrangler = new CalWrangler();
     dataServer = CasseroleDataServer.getInstance();
     loopTiming = LoopTiming.getInstance();
+    dtPoseView = new DtPoseView();
+    dtModStatesView = new DtModuleStatesView();
 
+
+    if(isSimulation()){
+      simModel = new RobotModel();
+    }
 
     dataServer.registerSignals(this);
     dataServer.startServer();
@@ -46,9 +62,9 @@ public class Robot extends TimedRobot {
 
   }
 
-  @Override
-  public void robotPeriodic() {
-  }
+  //////////////////////////////////////////////////////////////////////
+  // Autonomous Operation
+  //////////////////////////////////////////////////////////////////////
 
   @Override
   public void autonomousInit() {
@@ -60,10 +76,14 @@ public class Robot extends TimedRobot {
     loopCounter--;
     System.out.println("Da swerve is da wervd");
 
-    dataServer.sampleAllSignals();
+    updateTelemetry();
     loopTiming.markLoopEnd();
 
   }
+
+  //////////////////////////////////////////////////////////////////////
+  // Teleop Operation
+  //////////////////////////////////////////////////////////////////////
 
   @Override
   public void teleopInit() {
@@ -75,29 +95,83 @@ public class Robot extends TimedRobot {
     loopCounter++;
     System.out.println("Hello World");
 
-    dataServer.sampleAllSignals();
+    updateTelemetry();
     loopTiming.markLoopEnd();
 
   }
 
+
+  //////////////////////////////////////////////////////////////////////
+  // Disabled Operation 
+  //////////////////////////////////////////////////////////////////////
+
   @Override
   public void disabledInit() {
+
+    if(isSimulation()){
+      simModel.reset();
+    }
+
   }
 
   @Override
   public void disabledPeriodic() {
     loopTiming.markLoopStart();
 
-    dataServer.sampleAllSignals();
+    updateTelemetry();
     loopTiming.markLoopEnd();
   }
 
+  //////////////////////////////////////////////////////////////////////
+  // Common Utility Functions for Robot
+  //////////////////////////////////////////////////////////////////////
+
+  private void updateTelemetry(){
+    
+    if(isSimulation()){
+      dtPoseView.setActualPose(simModel.getCurActPose());
+    }
+
+    //TODO - fill these out to populate the web gui with useful debug info
+    //dtPoseView.setEstimatedPose(put something here); 
+    //dtPoseView.setDesiredPose(put something here); 
+    //dtModStatesView.setActualStates(FLAct_in, FRAct_in, BLAct_in, BRAct_in); 
+    //dtModStatesView.setDesiredStates(FLDes_in, FRDes_in, BLDes_in, BRDes_in);
+
+    double sampleTimeMs = LoopTiming.getInstance().getLoopStartTimeSec() * 1000;
+    dtPoseView.update(sampleTimeMs);
+    dtModStatesView.update(sampleTimeMs);
+    dataServer.sampleAllSignals();
+
+  }
+
+
+
+
+
+  /*=========================================================================*/
+  /*=========================================================================*/
+
+  /*
+   * This set of functions is for simulation support only, and is not called on the real
+   * robot. Put plant-model related functionality here. For training purposes,
+   * students should not have to modify this functionality.
+   */
+
+  // Simple robot plant model for simulation purposes
+  RobotModel simModel;
+
   @Override
-  public void testInit() {
+  public void simulationInit() {
   }
 
   @Override
-  public void testPeriodic() {
+  public void simulationPeriodic() {
+
+    simModel.update(isDisabled());
   }
+
+  /*=========================================================================*/
+  /*=========================================================================*/
 
 }

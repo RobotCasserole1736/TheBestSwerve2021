@@ -15,7 +15,7 @@ public class AcqList {
 
     HashSet<Signal> signals;
     AcqSpec acquisitionSpec;
-    String id;
+    public String id;
     RemoteEndpoint client;
 
     private Timer updater = null;
@@ -28,7 +28,12 @@ public class AcqList {
         client = client_in;
 
         for (String sig_id : signal_uuids) {
-            addSignal(CasseroleDataServer.getInstance().getSignalFromId(sig_id));
+            Signal sigToAdd = CasseroleDataServer.getInstance().getSignalFromId(sig_id);
+            if(sigToAdd != null){
+                addSignal(sigToAdd);
+            } else {
+                CrashTracker.logAndPrint("[AcqList] Client requested adding signal \"" + sig_id + "\" which does not exist! Skipping!");
+            }
         }
 
     }

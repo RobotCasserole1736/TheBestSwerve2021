@@ -189,7 +189,7 @@ public class CasseroleDataServer {
         Class rootClass = root.getClass();
         Package rootPkg = rootClass.getPackage();
 
-        if(rootPkg != null && rootPkg.toString().contains("frc.robot")){
+        if(rootPkg != null && (rootPkg.toString().contains("frc.robot") || rootPkg.toString().contains("frc.sim"))){
             //If we've got a valid package name inside of frc.robot, go through all the fields in the associated class.
             for(Field field : rootClass.getDeclaredFields()){
 
@@ -197,9 +197,15 @@ public class CasseroleDataServer {
                 String newName = prefix + (prefix.length() > 0 ? "." : "") + field.getName(); 
 
                 if(field.isAnnotationPresent(frc.lib.DataServer.Annotations.Signal.class)){
-                    //Case #1 - we found a @signal annotation - create a new AUtoDiscoveredSignal
+                    //Case #1 - we found a @signal annotation - create a new AutoDiscoveredSignal
                     frc.lib.DataServer.Annotations.Signal ann = field.getAnnotation(frc.lib.DataServer.Annotations.Signal.class);
-                    autoSig.add(new AutoDiscoveredSignal(field, root, newName,ann.units()));
+
+                    String nameToUse = newName;
+                    if(ann.name().length() > 0){
+                        //If the user picked a name, override it.
+                        nameToUse = ann.name().trim();
+                    }
+                    autoSig.add(new AutoDiscoveredSignal(field, root, nameToUse,ann.units()));
 
                 } else {
                     // No signal annotation - we should see if we can recurs on the object associated with this field
@@ -245,13 +251,14 @@ public class CasseroleDataServer {
      * Should be called at the end of each periodic function.
      */
     public void sampleAllSignals(){
-        double sampleTime = Timer.getFPGATimestamp() * 1000;
+        sampleAllSignals(Timer.getFPGATimestamp() * 1000);
+    }
+
+    public void sampleAllSignals(double sampleTime){
         for(AutoDiscoveredSignal sig : autoSig){
             sig.addSample(sampleTime);
         }
     }
-
-
 
 
 }

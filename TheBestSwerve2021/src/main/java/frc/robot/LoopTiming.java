@@ -32,12 +32,11 @@ public class LoopTiming{
     double prevLoopStartTime;
     double prevLoopEndTime;
 
-    @Signal
+    @Signal(units = "sec")
     double loopPeriodSec;
 
-    @Signal
+    @Signal(units = "sec")
     double loopDurationSec;
-
 
     /* Singleton stuff */
     private static LoopTiming loopTiming = null;
@@ -55,12 +54,12 @@ public class LoopTiming{
         prevLoopStartTime = loopStartTime;
         loopStartTime = Timer.getFPGATimestamp();
         loopPeriodSec = loopStartTime - prevLoopStartTime;
-        loopPeriodSec = loopEndTime - loopStartTime;
     }
 
     public void markLoopEnd(){
         prevLoopEndTime = loopEndTime;
         loopEndTime = Timer.getFPGATimestamp();
+        loopDurationSec = loopEndTime - loopStartTime;
     }
 
     public double getLoopStartTimeSec(){
