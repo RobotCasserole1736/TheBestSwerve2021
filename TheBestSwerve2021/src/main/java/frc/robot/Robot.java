@@ -7,7 +7,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.Constants;
 import frc.lib.Calibration.CalWrangler;
 import frc.lib.DataServer.CasseroleDataServer;
 import frc.lib.DataServer.Annotations.Signal;
@@ -36,6 +38,9 @@ public class Robot extends TimedRobot {
   @Signal(units = "count")
   int loopCounter = 0;
 
+  Spark testAzmthMotor;
+  Spark testWheelMotor;
+
 
   //////////////////////////////////////////////////////////////////////
   // Robot Initilization
@@ -51,6 +56,10 @@ public class Robot extends TimedRobot {
     dtPoseView = new DtPoseView();
     dtModStatesView = new DtModuleStatesView();
 
+    //Very silly temporary controller logic
+    // Yes, this should be deleted and moved and changed to be reasonable.
+    testAzmthMotor = new Spark(Constants.FL_AZMTH_MOTOR_IDX);
+    testWheelMotor = new Spark(Constants.FL_WHEEL_MOTOR_IDX);
 
     if(isSimulation()){
       simModel = new RobotModel();
@@ -73,8 +82,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     loopTiming.markLoopStart();
-    loopCounter--;
-    System.out.println("Da swerve is da wervd");
 
     updateTelemetry();
     loopTiming.markLoopEnd();
@@ -92,8 +99,12 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     loopTiming.markLoopStart();
-    loopCounter++;
-    System.out.println("Hello World");
+
+    //Very silly temporary controller logic
+    // Yes, this should be deleted and moved and changed to be reasonable.
+    testAzmthMotor.set(1.0);
+    testWheelMotor.set(1.0);
+
 
     updateTelemetry();
     loopTiming.markLoopEnd();
@@ -142,6 +153,7 @@ public class Robot extends TimedRobot {
     dtPoseView.update(sampleTimeMs);
     dtModStatesView.update(sampleTimeMs);
     dataServer.sampleAllSignals();
+    loopCounter++;
 
   }
 
