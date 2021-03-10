@@ -7,9 +7,8 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.Constants;
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import frc.lib.Calibration.CalWrangler;
 import frc.lib.DataServer.CasseroleDataServer;
 import frc.lib.DataServer.Annotations.Signal;
@@ -31,15 +30,16 @@ public class Robot extends TimedRobot {
   CasseroleDataServer dataServer;
   LoopTiming loopTiming;
 
-  // keep track of the robot's actual, estimated, and desired position on the field
-  DtPoseView dtPoseView;
-  DtModuleStatesView dtModStatesView;
+
+
+  //Drivetrain Control
+  Drivetrain dt;
+  
+  //Human/machine interfaces
+  DriverInterface di;
 
   @Signal(units = "count")
   int loopCounter = 0;
-
-  Spark testAzmthMotor;
-  Spark testWheelMotor;
 
 
   //////////////////////////////////////////////////////////////////////
@@ -53,13 +53,9 @@ public class Robot extends TimedRobot {
     wrangler = new CalWrangler();
     dataServer = CasseroleDataServer.getInstance();
     loopTiming = LoopTiming.getInstance();
-    dtPoseView = new DtPoseView();
-    dtModStatesView = new DtModuleStatesView();
 
-    //Very silly temporary controller logic
-    // Yes, this should be deleted and moved and changed to be reasonable.
-    testAzmthMotor = new Spark(Constants.FL_AZMTH_MOTOR_IDX);
-    testWheelMotor = new Spark(Constants.FL_WHEEL_MOTOR_IDX);
+    dt = new Drivetrain();
+    di = new DriverInterface();
 
     if(isSimulation()){
       simModel = new RobotModel();
@@ -83,6 +79,11 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     loopTiming.markLoopStart();
 
+    //TODO: how might we calcualte desired chassis speeds in autonomous?
+    ChassisSpeeds desChSpd = new ChassisSpeeds(0,0,0); //Worlds best auto routine - stay still.
+    dt.setDesiredState(desChSpd); 
+    dt.update();
+
     updateTelemetry();
     loopTiming.markLoopEnd();
 
@@ -100,11 +101,10 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     loopTiming.markLoopStart();
 
-    //Very silly temporary controller logic
-    // Yes, this should be deleted and moved and changed to be reasonable.
-    testAzmthMotor.set(1.0);
-    testWheelMotor.set(1.0);
-
+    di.update();
+    ChassisSpeeds desChSpd = new ChassisSpeeds(di.getFwdRevSpdCmd_mps(), di.getStrafeSpdCmd_mps(), di.getRotationSpdCmd_radPerSec());
+    dt.setDesiredState(desChSpd);
+    dt.update();
 
     updateTelemetry();
     loopTiming.markLoopEnd();
@@ -140,18 +140,12 @@ public class Robot extends TimedRobot {
   private void updateTelemetry(){
     
     if(isSimulation()){
-      dtPoseView.setActualPose(simModel.getCurActPose());
+      dt.dtPoseView.setActualPose(simModel.getCurActPose());
     }
 
-    //TODO - fill these out to populate the web gui with useful debug info
-    //dtPoseView.setEstimatedPose(put something here); 
-    //dtPoseView.setDesiredPose(put something here); 
-    //dtModStatesView.setActualStates(FLAct_in, FRAct_in, BLAct_in, BRAct_in); 
-    //dtModStatesView.setDesiredStates(FLDes_in, FRDes_in, BLDes_in, BRDes_in);
-
     double sampleTimeMs = LoopTiming.getInstance().getLoopStartTimeSec() * 1000;
-    dtPoseView.update(sampleTimeMs);
-    dtModStatesView.update(sampleTimeMs);
+    dt.dtPoseView.update(sampleTimeMs);
+    dt.dtModStatesView.update(sampleTimeMs);
     dataServer.sampleAllSignals();
     loopCounter++;
 
